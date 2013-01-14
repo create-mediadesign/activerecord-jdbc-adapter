@@ -395,7 +395,14 @@ module ::ArJdbc
     def select(sql, name = nil, binds = [])
       sql = substitute_binds(sql, binds)
       log(sql, name) do
-        @connection.execute_query(sql)
+	      result = @connection.execute_query(sql)
+        if result.empty?
+          ActiveRecord::Result.new([],[])
+        else
+          keys = result.first.keys
+          values = result.map { |r| keys.map { |k| r[k] } }
+          ActiveRecord::Result.new(keys, values)
+        end
       end
     end
 
